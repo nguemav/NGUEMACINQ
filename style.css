@@ -1,0 +1,157 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+#app-container {
+    display: flex;
+    height: 100vh;
+}
+
+#sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background-color: #1e1e1e;
+    border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+}
+
+#channel-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+#search-container {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    background-color: #1e1e1e;
+    z-index: 1;
+}
+
+#search-input {
+    width: 100%;
+    padding: 8px 12px 8px 35px; /* Add padding for icon */
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    box-sizing: border-box; /* Ensures padding is included in width */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+}
+
+#search-input::placeholder {
+    color: #888;
+}
+
+#search-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.channel-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+    transition: background-color 0.2s ease;
+}
+
+.channel-item:hover {
+    background-color: #333;
+}
+
+.channel-item.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.channel-item img {
+    width: 50px;
+    height: auto;
+    margin-right: 10px;
+    object-fit: contain;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.channel-item span {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+#player-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+    position: relative; /* Needed for overlaying elements */
+    overflow: hidden; /* Hide anything that might stick out */
+}
+
+#logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 20;
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+    text-shadow: 
+        1px 1px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        2px 2px 5px rgba(0,0,0,0.8);
+    pointer-events: none;
+    -webkit-text-stroke: 1px rgba(0,0,0,0.4);
+}
+
+#fullscreen-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    border: none;
+    background-color: rgba(128, 128, 128, 0.7);
+    cursor: pointer;
+    z-index: 21; /* Above video, below some controls maybe */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+}
+
+#player-container:hover #fullscreen-btn {
+    opacity: 1;
+}
+
+#fullscreen-btn.enter-fullscreen {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4zm10.5.5a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0 0 1h4a.5.5 0 0 0 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm10.5 0a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
+}
+
+#fullscreen-btn.exit-fullscreen {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 1 .5-.5zm-5 5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4zm10.5.5a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0 0 1h4a.5.5 0 0 0 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm10.5 0a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
+}
+
+#video-player {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    background-color: #000;
+}
