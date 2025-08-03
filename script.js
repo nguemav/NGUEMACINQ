@@ -60,6 +60,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     'qualitySelector',
                     'fullscreenToggle',
                 ]
+            },
+            hls: {
+                /* @tweakable Desired buffer length in seconds. A higher value can help prevent audio/video stutter on unstable connections. */
+                goalBufferLength: 30,
+                /* @tweakable Maximum desired buffer length in seconds. Limits how much the player buffers ahead. */
+                maxGoalBufferLength: 60,
+                /* @tweakable Override native HLS playback for more consistent behavior across devices. */
+                overrideNative: true
             }
         };
 
