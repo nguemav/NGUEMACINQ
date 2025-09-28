@@ -1,69 +1,66 @@
-export function initializePlayer() {
-    const videoEl = document.getElementById('video-player');
-    const logo = document.getElementById('logo');
+import * as ui from './ui.js';
 
-    /* @tweakable Vertical position of the logo in pixels */
-    const logoTop = 20;
-    /* @tweakable Horizontal position of the logo in pixels */
-    const logoLeft = 20;
-    /* @tweakable Stacking order of the logo */
-    const logoZIndex = 20;
+let hls;
+const videoPlayer = document.getElementById('video-player');
 
-    /* @tweakable Video.js player options */
-    const playerOptions = {
-        autoplay: true,
-        controls: true,
-        preload: 'auto',
-        fluid: true, // Makes the player responsive
-        liveui: true,
-        controlBar: {
-            children: [
-                'playToggle',
-                'liveDisplay',
-                'volumePanel',
-                'currentTimeDisplay',
-                'timeDivider',
-                'durationDisplay',
-                'progressControl',
-                'qualitySelector',
-                'fullscreenToggle',
-            ]
-        },
-        html5: {
-            hls: {
-                /* @tweakable Desired buffer length in seconds. A higher value can help prevent audio/video stutter on unstable connections. */
-                goalBufferLength: 30,
-                /* @tweakable Maximum desired buffer length in seconds. Limits how much the player buffers ahead. */
-                maxGoalBufferLength: 60,
-                overrideNative: true
-            }
-        }
-    };
+/**
+ * Starts playback for a given channel.
+ * @param {object} channel - The channel object.
+ */
+export function startPlayback(channel) {
+    ui.setupStreamButtons(channel.streams, playStream);
+}
 
-    const player = videojs(videoEl, playerOptions, function onPlayerReady() {
-        console.log('Video.js player is ready');
+/**
+ * Plays a specific stream URL using HLS.js or native playback.
+ * @param {string} streamUrl - The URL of the video stream.
+ */
+function playStream(streamUrl) {
+    if (hls) {
+        hls.destroy();
+    }
+    
+    // Clear previous audio tracks
+    ui.setupAudioTrackButtons(null);
 
-        if (logo) {
-            this.el().appendChild(logo);
-            logo.style.top = `${logoTop}px`;
-            logo.style.left = `${logoLeft}px`;
-            logo.style.zIndex = logoZIndex;
-        }
-
-        this.on('error', function() {
-            const error = this.error();
-            console.error('Video.js Error:', error);
-            const errorDisplay = this.getChild('errorDisplay');
-            if (errorDisplay) {
-                errorDisplay.open();
-                let errorMessage = `Erreur de lecture (Code: ${error.code}).`;
-                if (error.message) {
-                    errorMessage += ` Détail: ${error.message}`;
+    if (streamUrl.includes('.m3u8')) {
+        if (Hls.isSupported()) {
+            hls = new Hls();
+            hls.loadSource(streamUrl);
+            hls.attachMedia(videoPlayer);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                videoPlayer.play().catch(e => console.error("Autoplay was prevented:", e));
+            });
+            hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, () => {
+                ui.setupAudioTrackButtons(hls);
+            });
+            hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                   console.error('HLS fatal error:', data);
                 }
-                errorDisplay.el().querySelector('.vjs-modal-dialog-content').innerText = errorMessage;
-            }
-        });
-    });
+            });
+        } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+            videoPlayer.src = streamUrl;
+            videoPlayer.addEventListener('loadedmetadata', () => {
+                videoPlayer.play().catch(e => console.error("Autoplay was prevented:", e));
+            });
+        }
+    } else {
+        // Fallback for non-HLS streams
+        videoPlayer.src = streamUrl;
+        videoPlayer.play().catch(e => console.error("Autoplay was prevented:", e));
+    }
+}
 
-    return player;
+/**
+ * Destroys the HLS instance and stops the video.
+ */
+export function destroyPlayer() {
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+    videoPlayer.pause();
+    videoPlayer.src = '';
+    videoPlayer.removeAttribute('src'); // Ensure it's fully cleared
 }
